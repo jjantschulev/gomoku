@@ -9,8 +9,8 @@
 
   <icon src="public/assets/dark.png" />
   <name>Gomoku</name>
-  <preference name="fullscreen" value="true" />
-
+  <preference name="fullscreen" value="false" />
+  <access origin="192.168.0.50*" />
   <description>
       Online Multiplayer Gomoku.
   </description>

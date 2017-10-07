@@ -1,4 +1,4 @@
-var socket = io(window.location.href);
+var socket = io('192.168.0.50:5000');
 
 socket.on('games_update', function (data) {
   clearGames();
@@ -6,6 +6,8 @@ socket.on('games_update', function (data) {
     addGame(data[i].name, data[i].players.length, data[i].id);
   }
 });
+
+socket.on("connect", function() { alert(socket.id) })
 
 socket.on('joinAllowed', function (allowed, id) {
   if(allowed){
