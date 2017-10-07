@@ -12,6 +12,7 @@ function Piece(rows, cols, col) {
   this.r = GRID_SIZE;
 
   this.show = function () {
+    
     image(this.image, this.x, this.y, this.r, this.r);
   }
 

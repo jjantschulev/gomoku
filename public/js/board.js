@@ -8,9 +8,9 @@ function Board() {
         var xe = x%2==0;
         var ye = y%2==0;
         if(xe&&ye||!xe&&!ye){
-          fill(40);
+          fill(0);
         }else{
-          fill(45);
+          fill(30);
         }
         rect(x*GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
       }

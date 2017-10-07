@@ -92,12 +92,17 @@ io.on('connection', function (socket) {
       if(pid != null){
         game.players.splice(pid, 1);
         io.sockets.emit('games_update', games);
+        emitGameUpdate(game);
       }
     }
   });
 
   socket.on('remove_game', function (gameID) {
     if(findGameById(gameID) != null){
+      var g = games[findGameById(gameID)];
+      for (var i = 0; i < g.players.length; i++) {
+        io.to(g.players[i].id).emit('game_deleted');
+      }
       games.splice(findGameById(gameID), 1);
       io.sockets.emit('games_update', games);
     }

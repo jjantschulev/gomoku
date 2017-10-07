@@ -1,11 +1,9 @@
-var board;
 var game = null;
 var myTurn = false;
 var lightPiece;
 var darkPiece;
 var pieces = [];
 var connected = false;
-var connectionImage;
 var inSettings = false;
 var playing = connected && !inSettings;
 
@@ -15,20 +13,27 @@ var mX = 0, mY = 0, pmX = 0, pmY = 0;
 function preload() {
   lightPiece = loadImage('./assets/light.png');
   darkPiece = loadImage('./assets/dark.png');
-  connectionImage = loadImage('./assets/please_connect.png');
 }
 
 
 function setup () {
-  createCanvas(800, 800);
+  createCanvas(windowWidth, windowHeight);
   view = new View();
   board = new Board();
   toggleSettings();
 }
 
 function draw () {
-  playing = connected && !inSettings;
-  background(40);
+  if(game!=null){
+    playing = connected && !inSettings && game.players.length == 2;
+  }else{
+    playing = false;
+  }
+  background(0);
+  fill(245);
+  textAlign(CENTER, CENTER);
+  textSize(40);
+
   if(playing){
     view.update();
 
@@ -37,17 +42,34 @@ function draw () {
       pieces[i].show();
       pieces[i].update();
     }
+  }else if (connected) {
+    text('Waiting for other players...', width/2, height/2);
   }else{
-    image(connectionImage, 0, 0, width, height);
+    text('Please connect to game', width/2, height/2);
   }
 
 }
 
-
+var mDownX;
+var mDownY;
 function mousePressed () {
-  makeMove();
+  mDownX = mouseX;
+  mDownY = mouseY;
+  ptouchX = touchX;
+  ptouchY = touchY;
 }
 
+function mouseReleased() {
+  if (dist(mDownX, mDownY, mouseX, mouseY) < 10) {
+    makeMove();
+  }
+}
+
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  view.setZoom();
+}
 
 
 
