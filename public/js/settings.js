@@ -1,9 +1,16 @@
 function addGame (name, userCount, id) {
+  var btn = '<div data-id="'+id+'" onclick="joinGame(this)" class="join_btn"><p><i class="material-icons">add_circle</i></p></div>';
+  if(game != null){
+    if(game.id == id){
+      btn = '<div data-id="'+id+'" onclick="leaveGame(this)" class="leave_btn"><p><i class="material-icons">cancel</i></p></div>';
+    }
+  }
+
   document.getElementById('online_games').innerHTML +=
     '<div class="game_card">'+
     '<div class="game_card_name"><p>'+name+'</p></div>'+
     '<div class="players_connected"><p>'+userCount+'</p></div>'+
-    '<div data-id="'+id+'" onclick="joinGame(this)" class="join_btn"><p><i class="material-icons">add_circle</i></p></div>'+
+    btn+
     '<div data-id="'+id+'" onclick="deleteGame(this)" class="remove_btn"><p><i class="material-icons">delete</i></p></div>'+
     '</div>';
 }

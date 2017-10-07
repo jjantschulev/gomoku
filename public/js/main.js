@@ -1,5 +1,5 @@
 var board;
-var game;
+var game = null;
 var myTurn = false;
 var lightPiece;
 var darkPiece;
@@ -8,6 +8,9 @@ var connected = false;
 var connectionImage;
 var inSettings = false;
 var playing = connected && !inSettings;
+
+var view;
+var mX = 0, mY = 0, pmX = 0, pmY = 0;
 
 function preload() {
   lightPiece = loadImage('./assets/light.png');
@@ -18,11 +21,8 @@ function preload() {
 
 function setup () {
   createCanvas(800, 800);
+  view = new View();
   board = new Board();
-  for (var i = 0; i < 15; i++) {
-    pieces.push(new Piece(floor(random(20)), floor(random(20)), random(1) < 0.5));
-  }
-
   toggleSettings();
 }
 
@@ -30,6 +30,8 @@ function draw () {
   playing = connected && !inSettings;
   background(40);
   if(playing){
+    view.update();
+
     board.showBoard();
     for (var i = pieces.length-1; i >= 0; i--) {
       pieces[i].show();
@@ -41,6 +43,10 @@ function draw () {
 
 }
 
+
+function mousePressed () {
+  makeMove();
+}
 
 
 

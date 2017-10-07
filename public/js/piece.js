@@ -1,32 +1,22 @@
-function Piece(rows, cols, light) {
-  if(light){
+function Piece(rows, cols, col) {
+  if(col == 2){
     this.image = lightPiece;
-  }else{
+  }else if(col == 1){
     this.image = darkPiece;
   }
   this.cols = cols;
   this.rows = rows;
-  this.x = cols * board.gridSize;
-  this.y = rows * board.gridSize;
+  this.x = cols * GRID_SIZE;
+  this.y = rows * GRID_SIZE;
 
-  this.r = board.gridSize;
+  this.r = GRID_SIZE;
 
   this.show = function () {
     image(this.image, this.x, this.y, this.r, this.r);
   }
 
   this.update = function () {
-    if(mouseIsPressed){
-      if(mouseX >= this.x && mouseX <= this.x + this.r){
-        if(mouseY >= this.y && mouseY <= this.y + this.r){
-          this.delete();
-        }
-      }
-    }
-  }
 
-  this.delete = function() {
-    pieces.splice(pieces.indexOf(this), 1);
   }
 
 }
