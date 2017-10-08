@@ -6,7 +6,7 @@ app.use(express.static('public'));
 
 var io = require('socket.io')(server);
 var games = [];
-
+io.set( 'origins', '*:*' );
 
 io.on('connection', function (socket) {
   var clientIp = socket.request.connection.remoteAddress;
