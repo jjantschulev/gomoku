@@ -1,0 +1,21 @@
+{
+    "name": "gobang",
+    "version": "1.0.0",
+    "description": "Multiplayer gobang",
+    "main": "server.js",
+    "scripts": {
+        "start":"node server"
+    },
+    "keywords": [
+        "game",
+        "chinese",
+        "strategy",
+        "multiplayer"
+    ],
+    "author": "Jordan Jantschulev",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.16.1",
+        "socket.io": "^2.0.3"
+    }
+}
