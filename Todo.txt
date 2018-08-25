@@ -11,3 +11,5 @@ FIXME:
 XXX:
 COMBAK:
 NOTE:
+
+^^^ please ignore this, this is irrelevant. what's important is that this file is where we communicate information and ideas between each other.

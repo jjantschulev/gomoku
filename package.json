@@ -2,9 +2,9 @@
     "name": "gobang",
     "version": "1.0.0",
     "description": "Multiplayer gobang",
-    "main": "server.js",
+    "main": "game_server.js",
     "scripts": {
-        "start":"node server"
+        "start":"node game_server.js"
     },
     "keywords": [
         "game",
@@ -12,7 +12,7 @@
         "strategy",
         "multiplayer"
     ],
-    "author": "Jordan Jantschulev",
+    "author": "Jordan Jantschulev, Jacob Schneider",
     "license": "ISC",
     "dependencies": {
         "express": "^4.16.1",
