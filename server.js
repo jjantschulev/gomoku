@@ -3,28 +3,28 @@ function requestHandler (req, res) {
 	if (req.method == "GET") {
 		switch (req.url) {
 			case '/':
-			res.writeHead(200, { 'Content-Type': 'text/html' });
-			res.write(fs.readFileSync(path.join(__dirname, 'public/index.html'), 'utf8'));
-			break;
+				res.writeHead(200, { 'Content-Type': 'text/html' });
+				res.write(fs.readFileSync(path.join(__dirname, 'public/index.html'), 'utf8'));
+				break;
 			case '/master.css':
-			res.writeHead(200, { 'Content-type': 'text/css' });
-			res.write(fs.readFileSync(path.join(__dirname, 'public/master.css'), 'utf8'));
-			break;
+				res.writeHead(200, { 'Content-type': 'text/css' });
+				res.write(fs.readFileSync(path.join(__dirname, 'public/master.css'), 'utf8'));
+				break;
 			case '/index.js':
-			res.writeHead(200, {'Content-type': 'text/javascript' });
-			res.write(fs.readFileSync(path.join(__dirname, 'public/index.js'), 'utf8'));
-			break;
+				res.writeHead(200, {'Content-type': 'text/javascript' });
+				res.write(fs.readFileSync(path.join(__dirname, 'public/index.js'), 'utf8'));
+				break;
 			case '/socket.io.js':
-			res.writeHead(200, {'Content-type': 'text/javascript' });
-			res.write(fs.readFileSync(path.join(__dirname, 'public/socket.io.js'), 'utf8'));
-			break;
+				res.writeHead(200, {'Content-type': 'text/javascript' });
+				res.write(fs.readFileSync(path.join(__dirname, 'public/socket.io.js'), 'utf8'));
+				break;
 			case '/jquery.js':
-			res.writeHead(200, {'Content-type': 'text/javascript' });
-			res.write(fs.readFileSync(path.join(__dirname, 'public/jquery.js'), 'utf8'));
-			break;
+				res.writeHead(200, {'Content-type': 'text/javascript' });
+				res.write(fs.readFileSync(path.join(__dirname, 'public/jquery.js'), 'utf8'));
+				break;
 			default:
-			res.writeHead(404)
-			res.write('The requested resource is unavailable');
+				res.writeHead(404)
+				res.write('The requested resource is unavailable');
 		}
 		res.end();
 
