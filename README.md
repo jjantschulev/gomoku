@@ -1,2 +1,0 @@
-# gomoku
-Muliplayer Gomoku Server
