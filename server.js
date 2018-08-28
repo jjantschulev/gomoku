@@ -2,7 +2,7 @@ const socket_io = require("socket.io");
 const http = require("http");
 const mysql = require("mysql");
 const mysqlConfig = require("./mysqlConfig.js");
-var server = http.createServer().listen(5005, err => { if (err) throw err; console.log("Gomoku Running on port 5005") });
+var server = http.createServer().listen(3013, err => { if (err) throw err; console.log("Gomoku Running on port 3013") });
 var io = socket_io(server, { pingInterval: 500, pingTimeout: 1000 });
 
 var conn = mysql.createConnection(mysqlConfig.mysqlConfig);
