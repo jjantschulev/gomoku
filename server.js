@@ -155,6 +155,11 @@ io.on('connection', (socket) => {
             board: create2DArray(21, 21),
         }
         games.push(newGame);
+        socket.emit("returnNewGame", newGame);
+        var connectedFriend = getConnectedUserById(player2.id);
+        if (connectedFriend) {
+            io.sockets.connected[connectedFriend.socketId].emit('returnNewGame', newGame);
+        }
     });
 
     socket.on('getGames', (userJson) => {
@@ -172,7 +177,10 @@ io.on('connection', (socket) => {
         var game = JSON.parse(gameJson);
         game = gomoku.gameLogic(game, x, y);
         for (var i = 0; i < game.players.length; i++) {
-            io.sockets.connected[game.players[i].id].emit("gameMove", game);
+            var connectedPlayer = getConnectedUserById(game.players[i].id);
+            if (connectedPlayer) {
+                io.sockets.connected[connectedPlayer.socketId].emit("gameMove", game);
+            }
         }
     });
     socket.on('removeGame', (gameJson) => {
@@ -180,7 +188,10 @@ io.on('connection', (socket) => {
         if (games.indexOf(game) != -1) {
             games.splice(games.indexOf(game), 1);
             for (var i = 0; i < game.players.length; i++) {
-                io.sockets.connected[game.players[i].id].emit("gameRemoved", game);
+                var connectedPlayer = getConnectedUserById(game.players[i].id);
+                if (connectedPlayer) {
+                    io.sockets.connected[connectedPlayer.socketId].emit("gameRemoved", game);
+                }
             }
         }
     });
