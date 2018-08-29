@@ -1,5 +1,6 @@
 const socket_io = require("socket.io");
 const http = require("http");
+const gomoku = require('./gomoku.js');
 const mysql = require("mysql");
 const mysqlConfig = require("./mysqlConfig.js");
 var server = http.createServer().listen(3013, err => { if (err) throw err; console.log("Gomoku Running on port 3013") });
@@ -143,6 +144,47 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('newGame', (player1Json, player2Json) => {
+        var player1 = JSON.parse(player1Json);
+        var player2 = JSON.parse(player2Json);
+        var newGame = {
+            players: [player1, player2],
+            turn: 0,
+            state: 0,
+            winners: [],
+            board: create2DArray(21, 21),
+        }
+        games.push(newGame);
+    });
+
+    socket.on('getGames', (userJson) => {
+        var user = JSON.parse(userJson);
+        var gamesForUser = [];
+        games.forEach(game => {
+            if (game.players.indexOf(user) != -1) {
+                gamesForUser.push(game);
+            }
+        });
+        socket.emit('returnGames', gamesForUser);
+    });
+
+    socket.on('gameMove', (gameJson, x, y) => {
+        var game = JSON.parse(gameJson);
+        game = gomoku.gameLogic(game, x, y);
+        for (var i = 0; i < game.players.length; i++) {
+            io.sockets.connected[game.players[i].id].emit("gameMove", game);
+        }
+    });
+    socket.on('removeGame', (gameJson) => {
+        var game = JSON.parse(gameJson);
+        if (games.indexOf(game) != -1) {
+            games.splice(games.indexOf(game), 1);
+            for (var i = 0; i < game.players.length; i++) {
+                io.sockets.connected[game.players[i].id].emit("gameRemoved", game);
+            }
+        }
+    });
+
     socket.on('disconnect', () => {
         for (var i = 0; i < usersConnected.length; i++) {
             if (usersConnected[i].socketId == socket.id) {
@@ -180,4 +222,11 @@ function getConnectedUserById(string) {
             return usersConnected[i];
         }
     }
+}
+function create2DArray(numRows, numColumns) {
+    let array = new Array(numRows);
+    for (let i = 0; i < numColumns; i++) {
+        array[i] = new Array(numColumns);
+    }
+    return array;
 }
