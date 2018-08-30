@@ -182,8 +182,10 @@ io.on('connection', (socket) => {
         var user = JSON.parse(userJson);
         var gamesForUser = [];
         games.forEach(game => {
-            if (game.players.indexOf(user) != -1) {
-                gamesForUser.push(game);
+            for (var i = 0; i < game.players.length; i++) {
+                if (game.players[i].id == user.id) {
+                    gamesForUser.push(game);
+                }
             }
         });
         socket.emit('returnGames', gamesForUser);
