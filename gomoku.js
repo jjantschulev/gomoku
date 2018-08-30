@@ -34,6 +34,8 @@ module.exports.gameLogic = function (game, newX, newY) {
         // Steal Pieces;
         for (var i = 0; i < dirs.length; i++) {
             otherColorCount = 0;
+            let x = newX;
+            let y = newY;
             for (var n = 1; n < 3; n++) {
                 if (!outOfBounds(x + dirs[i].x * n, y + dirs[i].y * n)) {
                     if (game.board[x + dirs[i].x * n][y + dirs[i].y * n] == otherColor) {
