@@ -148,6 +148,7 @@ io.on('connection', (socket) => {
         var player1 = JSON.parse(player1Json);
         var player2 = JSON.parse(player2Json);
         var newGame = {
+            id: generateId(),
             players: [player1, player2],
             turn: 0,
             state: 0,
@@ -159,6 +160,21 @@ io.on('connection', (socket) => {
         var connectedFriend = getConnectedUserById(player2.id);
         if (connectedFriend) {
             io.sockets.connected[connectedFriend.socketId].emit('returnNewGame', newGame);
+        }
+    });
+
+    socket.on("resetGame", (gameJson) => {
+        var game = JSON.parse(gameJson);
+        if (game.state == 1) {
+            game.state = 0;
+            game.board = create2DArray(21, 21);
+            for (var i = 0; i < game.players.length; i++) {
+                var connectedPlayer = getConnectedUserById(game.players[i].id);
+                if (connectedPlayer) {
+                    io.sockets.connected[connectedPlayer.socketId].emit("gameMove", game);
+                }
+            }
+            games[getIndexFromGameId(game.id)] = game;
         }
     });
 
@@ -176,6 +192,7 @@ io.on('connection', (socket) => {
     socket.on('gameMove', (gameJson, x, y) => {
         var game = JSON.parse(gameJson);
         game = gomoku.gameLogic(game, x, y);
+        games[getIndexFromGameId(game.id)] = game;
         for (var i = 0; i < game.players.length; i++) {
             var connectedPlayer = getConnectedUserById(game.players[i].id);
             if (connectedPlayer) {
@@ -185,8 +202,9 @@ io.on('connection', (socket) => {
     });
     socket.on('removeGame', (gameJson) => {
         var game = JSON.parse(gameJson);
-        if (games.indexOf(game) != -1) {
-            games.splice(games.indexOf(game), 1);
+        var index = getIndexFromGameId(game.id);
+        if (games[index]) {
+            games.splice(i, 1);
             for (var i = 0; i < game.players.length; i++) {
                 var connectedPlayer = getConnectedUserById(game.players[i].id);
                 if (connectedPlayer) {
@@ -240,4 +258,21 @@ function create2DArray(numRows, numColumns) {
         array[i] = new Array(numColumns);
     }
     return array;
+}
+
+function generateId() {
+    var alphabet = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ)(*&^%$#@!-=_+,.<>[]{}";
+    var id = "";
+    for (var i = 0; i < 64; i++) {
+        id += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+    }
+    return id;
+}
+
+function getIndexFromGameId(gameId) {
+    for (var i = 0; i < games.length; i++) {
+        if (games[i].id == gameId) {
+            return i;
+        }
+    }
 }
