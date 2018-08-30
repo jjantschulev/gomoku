@@ -59,13 +59,3 @@ function outOfBounds(x, y) {
     }
     return true;
 }
-function create2DArray(size) {
-    var array = new Array(size);
-    for (var i = 0; i < size; i++) {
-        array[i] = new Array(size);
-        for (var j = 0; j < size; j++) {
-            array[i][j] = 0;
-        }
-    }
-    return array;
-}

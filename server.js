@@ -252,7 +252,7 @@ function getConnectedUserById(string) {
         }
     }
 }
-function create2DArray(size) {
+function create2dArray(size) {
     var array = new Array(size);
     for (var i = 0; i < size; i++) {
         array[i] = new Array(size);
