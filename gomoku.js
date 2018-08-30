@@ -34,10 +34,10 @@ module.exports.gameLogic = function (passedGame, newX, newY) {
             }
         }
         // Steal Pieces;
-        let x = newX;
-        let y = newY;
 
         for (var i = 0; i < dirs.length; i++) {
+            let x = newX;
+            let y = newY;
             otherColorCount = 0;
             for (var n = 1; n < 3; n++) {
                 if (!outOfBounds(x + dirs[i].x * n, y + dirs[i].y * n)) {
