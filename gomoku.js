@@ -15,7 +15,7 @@ module.exports.gameLogic = function (passedGame, newX, newY) {
                 if (game.board[x][y] == turnColor) {
                     // Check for win:
                     for (var i = 0; i < dirs.length / 2; i++) {
-                        var count;
+                        var count = 0;
                         for (var n = 0; n < 5; n++) {
                             if (!outOfBounds(x + dirs[i].x * n, y + dirs[i].y * n)) {
                                 if (game.board[x + dirs[i].x * n][y + dirs[i].y * n] == turnColor) {
@@ -38,7 +38,7 @@ module.exports.gameLogic = function (passedGame, newX, newY) {
         for (var i = 0; i < dirs.length; i++) {
             let x = newX;
             let y = newY;
-            otherColorCount = 0;
+            var otherColorCount = 0;
             for (var n = 1; n < 3; n++) {
                 if (!outOfBounds(x + dirs[i].x * n, y + dirs[i].y * n)) {
                     if (game.board[x + dirs[i].x * n][y + dirs[i].y * n] == otherColor) {
