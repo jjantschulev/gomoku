@@ -153,7 +153,7 @@ io.on('connection', (socket) => {
             turn: 0,
             state: 0,
             winners: [],
-            board: create2DArray(21, 21),
+            board: create2dArray(21),
         }
         games.push(newGame);
         socket.emit("returnNewGame", newGame);
@@ -167,7 +167,7 @@ io.on('connection', (socket) => {
         var game = JSON.parse(gameJson);
         if (game.state == 1) {
             game.state = 0;
-            game.board = create2DArray(21, 21);
+            game.board = create2dArray(21);
             for (var i = 0; i < game.players.length; i++) {
                 var connectedPlayer = getConnectedUserById(game.players[i].id);
                 if (connectedPlayer) {
@@ -252,10 +252,13 @@ function getConnectedUserById(string) {
         }
     }
 }
-function create2DArray(numRows, numColumns) {
-    let array = new Array(numRows);
-    for (let i = 0; i < numColumns; i++) {
-        array[i] = new Array(numColumns);
+function create2DArray(size) {
+    var array = new Array(size);
+    for (var i = 0; i < size; i++) {
+        array[i] = new Array(size);
+        for (var j = 0; j < size; j++) {
+            array[i][j] = 0;
+        }
     }
     return array;
 }

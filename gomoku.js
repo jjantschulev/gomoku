@@ -24,7 +24,6 @@ module.exports.gameLogic = function (game, newX, newY) {
                         }
                         if (count == 5) {
                             game.state = 1;
-                            game.board = create2DArray(21, 21);
                             game.winners.push(game.turn);
                             break outerLoop;
                         }
@@ -60,10 +59,13 @@ function outOfBounds(x, y) {
     }
     return true;
 }
-function create2DArray(numRows, numColumns) {
-    let array = new Array(numRows);
-    for (let i = 0; i < numColumns; i++) {
-        array[i] = new Array(numColumns);
+function create2DArray(size) {
+    var array = new Array(size);
+    for (var i = 0; i < size; i++) {
+        array[i] = new Array(size);
+        for (var j = 0; j < size; j++) {
+            array[i][j] = 0;
+        }
     }
     return array;
 }
