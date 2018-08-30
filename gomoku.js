@@ -3,7 +3,8 @@ var dirs = [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: -1, y: 1 },
 { x: -1, y: 0 }, { x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 }]
 
 
-module.exports.gameLogic = function (game, newX, newY) {
+module.exports.gameLogic = function (passedGame, newX, newY) {
+    var game = passedGame;
     var turnColor = game.turn == 0 ? 1 : -1;
     var otherColor = game.turn == 0 ? -1 : 1;
     if (game.board[newX][newY] == 0) {
@@ -13,7 +14,7 @@ module.exports.gameLogic = function (game, newX, newY) {
             for (var y = 0; y < game.board[x].length; y++) {
                 if (game.board[x][y] == turnColor) {
                     // Check for win:
-                    for (var i = 0; i < dirs.length; i++) {
+                    for (var i = 0; i < dirs.length / 2; i++) {
                         var count;
                         for (var n = 0; n < 5; n++) {
                             if (!outOfBounds(x + dirs[i].x * n, y + dirs[i].y * n)) {
@@ -25,6 +26,7 @@ module.exports.gameLogic = function (game, newX, newY) {
                         if (count == 5) {
                             game.state = 1;
                             game.winners.push(game.turn);
+                            console.log("Winner: " + game.players[game.turn].name);
                             break outerLoop;
                         }
                     }
@@ -32,10 +34,11 @@ module.exports.gameLogic = function (game, newX, newY) {
             }
         }
         // Steal Pieces;
+        let x = newX;
+        let y = newY;
+
         for (var i = 0; i < dirs.length; i++) {
             otherColorCount = 0;
-            let x = newX;
-            let y = newY;
             for (var n = 1; n < 3; n++) {
                 if (!outOfBounds(x + dirs[i].x * n, y + dirs[i].y * n)) {
                     if (game.board[x + dirs[i].x * n][y + dirs[i].y * n] == otherColor) {
@@ -56,8 +59,8 @@ module.exports.gameLogic = function (game, newX, newY) {
     return game;
 }
 function outOfBounds(x, y) {
-    if (x < 0 || y < 0 || y >= 21 || y >= 21) {
-        return false;
+    if (x < 0 || y < 0 || x >= 21 || y >= 21) {
+        return true;
     }
-    return true;
+    return false;
 }
