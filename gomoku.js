@@ -47,7 +47,7 @@ module.exports.gameLogic = function (passedGame, newX, newY) {
                 }
             }
             if (!outOfBounds(x + dirs[i].x * 3, y + dirs[i].y * 3)) {
-                if (otherColorCount == 2 && game.board[x + dirs[i].x * 3][y + dirs[i].y * 3 == turnColor]) {
+                if (otherColorCount == 2 && game.board[x + dirs[i].x * 3][y + dirs[i].y * 3] == turnColor) {
                     for (var n = 1; n < 3; n++) {
                         game.board[x + dirs[i].x * n][y + dirs[i].y * n] = 0;
                     }
