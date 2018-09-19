@@ -45,11 +45,12 @@ io.on('connection', (socket) => {
         // Validate inputs 
         if (username.length <= 2 || username.length > 100) {
             socket.emit("createAccountError", "Username must be more than 2 and less than 100 characters");
+            return;
         }
         if (password.length < 8) {
             socket.emit("createAccountError", "Password must be 8 or more characters");
+            return;
         }
-        return;
         // Check if username already exists
         conn.query(`SELECT * FROM users WHERE username = '${username}';`, (err, data) => {
             if (err) throw err;
