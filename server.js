@@ -124,8 +124,8 @@ io.on('connection', (socket) => {
                         });
                         // Send new friend data to other person
                         var connectedFriend = getConnectedUserByName(newFriendName);
-                        if (connectedFriend) {
-                            io.sockets.connected[connectedFriend.socketId].emit('newFriendRequest', {
+                        for (var c = 0; c < connectedFriend.length; c++) {
+                            io.sockets.connected[connectedFriend[c].socketId].emit('newFriendRequest', {
                                 userInfo: {
                                     name: userData.name,
                                 },
@@ -147,8 +147,8 @@ io.on('connection', (socket) => {
         conn.query(`UPDATE friends SET state = 2 WHERE user1 = '${friendData.name}' AND user2 = '${userData.name}';`);
         socket.emit('friendAccepted', friendData);
         var connectedFriend = getConnectedUserByName(friendData.name);
-        if (connectedFriend) {
-            io.sockets.connected[connectedFriend.socketId].emit('friendAccepted', userData);
+        for (var c = 0; c < connectedFriend.length; c++) {
+            io.sockets.connected[connectedFriend[c].socketId].emit('friendAccepted', userData);
         }
     });
 
@@ -159,8 +159,8 @@ io.on('connection', (socket) => {
         conn.query(`DELETE FROM friends WHERE user1 = '${friendData.name}' AND user2 = '${userData.name}';`);
         socket.emit('friendDeleted', friendData);
         var connectedFriend = getConnectedUserByName(friendData.name);
-        if (connectedFriend) {
-            io.sockets.connected[connectedFriend.socketId].emit('friendDeleted', userData);
+        for (var c = 0; c < connectedFriend.length; c++) {
+            io.sockets.connected[connectedFriend[c].socketId].emit('friendDeleted', userData);
         }
     });
 
@@ -178,8 +178,8 @@ io.on('connection', (socket) => {
         games.push(newGame);
         socket.emit("returnNewGame", newGame);
         var connectedFriend = getConnectedUserByName(player2.name);
-        if (connectedFriend) {
-            io.sockets.connected[connectedFriend.socketId].emit('returnNewGame', newGame);
+        for (var c = 0; c < connectedFriend.length; c++) {
+            io.sockets.connected[connectedFriend[c].socketId].emit('returnNewGame', newGame);
         }
     });
 
@@ -190,8 +190,8 @@ io.on('connection', (socket) => {
             game.board = create2dArray(21);
             for (var i = 0; i < game.players.length; i++) {
                 var connectedPlayer = getConnectedUserByName(game.players[i].name);
-                if (connectedPlayer) {
-                    io.sockets.connected[connectedPlayer.socketId].emit("gameMove", game);
+                for (var c = 0; c < connectedPlayer.length; c++) {
+                    io.sockets.connected[connectedPlayer[c].socketId].emit("gameMove", game);
                 }
             }
             games[getIndexFromGameId(game.id)] = game;
@@ -221,8 +221,8 @@ io.on('connection', (socket) => {
         games[getIndexFromGameId(game.id)] = game;
         for (var i = 0; i < game.players.length; i++) {
             var connectedPlayer = getConnectedUserByName(game.players[i].name);
-            if (connectedPlayer) {
-                io.sockets.connected[connectedPlayer.socketId].emit("gameMove", game);
+            for (var c = 0; c < connectedPlayer.length; c++) {
+                io.sockets.connected[connectedPlayer[c].socketId].emit("gameMove", game);
             }
         }
     });
@@ -233,8 +233,8 @@ io.on('connection', (socket) => {
             games.splice(i, 1);
             for (var i = 0; i < game.players.length; i++) {
                 var connectedPlayer = getConnectedUserByName(game.players[i].name);
-                if (connectedPlayer) {
-                    io.sockets.connected[connectedPlayer.socketId].emit("gameRemoved", game);
+                for (var c = 0; c < connectedPlayer.length; c++) {
+                    io.sockets.connected[connectedPlayer[c].socketId].emit("gameRemoved", game);
                 }
             }
         }
@@ -266,11 +266,13 @@ function userExists(username, callback) {
 
 
 function getConnectedUserByName(string) {
+    var currentConnectedUsers = [];
     for (var i = 0; i < usersConnected.length; i++) {
         if (usersConnected[i].username == string) {
-            return usersConnected[i];
+            currentConnectedUsers.push(usersConnected[i]);
         }
     }
+    return currentConnectedUsers;
 }
 function create2dArray(size) {
     var array = new Array(size);
