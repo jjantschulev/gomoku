@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
                 if (data[0].password == hashedPwd) {
                     socket.emit('loginSuccess', [username, password]);
                     usersConnected.push({
-                        username: data[0].name,
+                        username: data[0].username,
                         socketId: socket.id,
                     });
                 } else {
