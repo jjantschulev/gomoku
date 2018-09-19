@@ -74,9 +74,10 @@ io.on('connection', (socket) => {
                 socket.emit("accountDeleted");
             }
         });
+        conn.query(`DELETE FROM friends WHERE user1 = '${username}';`);
+        conn.query(`DELETE FROM friends WHERE user2 = '${username}';`);
 
     });
-
 
     socket.on('getFriends', (userDataJson) => {
         var userData = JSON.parse(userDataJson);
