@@ -49,6 +49,7 @@ io.on('connection', (socket) => {
         if (password.length < 8) {
             socket.emit("createAccountError", "Password must be 8 or more characters");
         }
+        return;
         // Check if username already exists
         conn.query(`SELECT * FROM users WHERE username = '${username}';`, (err, data) => {
             if (err) throw err;
@@ -65,6 +66,18 @@ io.on('connection', (socket) => {
         });
 
     });
+
+    socket.on('deleteAccount', (username) => {
+
+        conn.query(`DELETE FROM users WHERE username = '${username}';`, (err, data) => {
+            if (err) throw err;
+            if (data.affectedRows > 0) {
+                socket.emit("accountDeleted");
+            }
+        });
+
+    });
+
 
     socket.on('getFriends', (userDataJson) => {
         var userData = JSON.parse(userDataJson);
