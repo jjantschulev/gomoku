@@ -21,11 +21,9 @@ io.on('connection', (socket) => {
 
     socket.on("login", (username, password) => {
         var hashedPwd = crypto.createHash('sha256').update(password).digest('hex');
-        console.log(hashedPwd);
         conn.query(`SELECT * FROM users WHERE username = '${username}';`, (err, data) => {
             if (err) throw err;
             if (data.length > 0) {
-                console.log(data);
                 if (data[0].password == hashedPwd) {
                     socket.emit('loginSuccess', [username, password]);
                     usersConnected.push({
@@ -82,15 +80,14 @@ io.on('connection', (socket) => {
 
     socket.on('getFriends', (userDataJson) => {
         var userData = JSON.parse(userDataJson);
-        conn.query(`SELECT * FROM friends WHERE user1 = '${userData.username}'; `, (err, data) => {
+        conn.query(`SELECT * FROM friends WHERE user1 = '${userData.name}'; `, (err, data) => {
             if (err) throw err;
             var friends = [];
             data.forEach(item => {
-                var userInfo = getUserNameAndTag(item.user2);
                 friends.push({
                     state: item.state,
                     userInfo: {
-                        name: userInfo.username,
+                        name: item.user2,
                     },
                 });
             });
@@ -266,12 +263,6 @@ function userExists(username, callback) {
     });
 }
 
-function getUserNameAndTag(string) {
-    return {
-        username: string.substring(0, string.lastIndexOf('#')),
-        usertag: parseInt(string.substring(string.lastIndexOf('#') + 1, string.length)),
-    }
-}
 
 function getConnectedUserByName(string) {
     for (var i = 0; i < usersConnected.length; i++) {
