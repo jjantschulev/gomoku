@@ -2,6 +2,7 @@ const socket_io = require("socket.io");
 const http = require("http");
 const gomoku = require('./gomoku.js');
 const mysql = require("mysql");
+const crypto = require("crypto");
 const mysqlConfig = require("./mysqlConfig.js");
 var server = http.createServer().listen(3013, err => { if (err) throw err; console.log("Gomoku Running on port 3013") });
 var io = socket_io(server, { pingInterval: 500, pingTimeout: 5000 });
@@ -18,40 +19,56 @@ var usersConnected = [];
 
 io.on('connection', (socket) => {
 
-    socket.on('register', (dataJson) => {
-        var data = JSON.parse(dataJson);
-        usersConnected.push({
-            username: data.name,
-            usertag: data.tag,
-            socketId: socket.id,
-            userId: data.id,
-        });
-        socket.emit('registered');
-    })
-
-    socket.on('createAccount', (username) => {
-        // Generate user TAG
-        if (username.length <= 2) return;
-        var usertag = 1;
-        conn.query(`SELECT * FROM users WHERE username = '${username}' ORDER BY tag DESC;`, (err, data) => {
+    socket.on("login", (username, password) => {
+        var hashedPwd = crypto.createHash('sha256').update(password).digest('hex');
+        console.log(hashedPwd);
+        conn.query(`SELECT * FROM users WHERE username = '${username}';`, (err, data) => {
             if (err) throw err;
             if (data.length > 0) {
-                usertag = data[0].tag + 1;
+                console.log(data);
+                if (data[0].password == hashedPwd) {
+                    socket.emit('loginSuccess', [username, password]);
+                    usersConnected.push({
+                        username: data[0].name,
+                        socketId: socket.id,
+                    });
+                } else {
+                    socket.emit('loginError', "Incorrect Password");
+                }
+            } else {
+                socket.emit('loginError', "Username not found");
             }
-            conn.query(`INSERT INTO users (username, tag) VALUES ('${username}', '${usertag}')`);
-            console.log("Success. Account created: " + username + '#' + usertag);
-            socket.emit('successfulAccountCreation', {
-                name: username,
-                tag: usertag,
-                id: username + '#' + usertag,
-            });
+        });
+    });
+
+    socket.on('createAccount', (username, password) => {
+        // Validate inputs 
+        if (username.length <= 2 || username.length > 100) {
+            socket.emit("createAccountError", "Username must be more than 2 and less than 100 characters");
+        }
+        if (password.length < 8) {
+            socket.emit("createAccountError", "Password must be 8 or more characters");
+        }
+        // Check if username already exists
+        conn.query(`SELECT * FROM users WHERE username = '${username}';`, (err, data) => {
+            if (err) throw err;
+            if (data.length == 0) {
+                // Username does not exist
+                var hashedPwd = crypto.createHash('sha256').update(password).digest('hex');;
+
+                conn.query(`INSERT INTO users (username, password) VALUES ('${username}', '${hashedPwd}')`);
+                socket.emit('successfulAccountCreation', [username, password]);
+
+            } else {
+                socket.emit("createAccountError", "This username already exists. Please choose a different one.");
+            }
         });
 
     });
 
     socket.on('getFriends', (userDataJson) => {
         var userData = JSON.parse(userDataJson);
-        conn.query(`SELECT * FROM friends WHERE user1 = '${userData.id}'; `, (err, data) => {
+        conn.query(`SELECT * FROM friends WHERE user1 = '${userData.username}'; `, (err, data) => {
             if (err) throw err;
             var friends = [];
             data.forEach(item => {
@@ -60,8 +77,6 @@ io.on('connection', (socket) => {
                     state: item.state,
                     userInfo: {
                         name: userInfo.username,
-                        tag: userInfo.usertag,
-                        id: userInfo.username + '#' + userInfo.usertag,
                     },
                 });
             });
@@ -69,53 +84,46 @@ io.on('connection', (socket) => {
         });
     });
 
-    socket.on('newFriend', (userDataJson, newFriendId) => {
-        var userData = JSON.parse(userDataJson);
-        var newFriendInfo = getUserNameAndTag(newFriendId);
-        // Check if newfriend exists;
-        if (userData.id == newFriendId) {
+    socket.on('newFriend', (myName, newFriendName) => {
+        // Make sure friends are not equal
+        if (myName == newFriendName) {
             socket.emit("newFriendError", "You can't be friends with youself.");
             return;
         }
 
-        getUserIdFromInfo(newFriendInfo.username, newFriendInfo.usertag, (err, result) => {
+        // Check if newfriend exists;
+        conn.query(`SELECT * FROM users WHERE username = '${newFriendName}';`, (err, data) => {
             if (err) throw err;
-            if (result.length == 1) {
-                // Checking if these people are already friends
-                conn.query(`SELECT * FROM friends WHERE user1 = '${userData.id}' AND user2 = '${newFriendId}';`, (err, data) => {
+            if (data.length > 0) {
+                conn.query(`SELECT * FROM friends WHERE user1 = '${myName}' AND user2 = '${newFriendName}';`, (err, data) => {
                     if (err) throw err;
                     if (data.length > 0) {
                         socket.emit('newFriendError', "You are already friends with this person");
                     } else {
-                        // Insert new friend record into database
-                        conn.query(`INSERT INTO friends (user1, user2, state) VALUES ('${userData.id}', '${newFriendId}', 0);`)
-                        conn.query(`INSERT INTO friends (user1, user2, state) VALUES ('${newFriendId}', '${userData.id}', 1);`)
+                        // Insert new friend records into database
+                        conn.query(`INSERT INTO friends (user1, user2, state) VALUES ('${myName}', '${newFriendName}', 0);`)
+                        conn.query(`INSERT INTO friends (user1, user2, state) VALUES ('${newFriendName}', '${myName}', 1);`)
                         // Send back new friend data, so user can insert it into the scroll view
                         socket.emit('newFriendSuccess', {
                             userInfo: {
                                 name: newFriendInfo.username,
-                                tag: newFriendInfo.usertag,
-                                id: newFriendInfo.username + '#' + newFriendInfo.usertag,
                             },
                             state: 0,
                         });
                         // Send new friend data to other person
-                        var connectedFriend = getConnectedUserById(newFriendId);
+                        var connectedFriend = getConnectedUserByName(newFriendName);
                         if (connectedFriend) {
                             io.sockets.connected[connectedFriend.socketId].emit('newFriendRequest', {
                                 userInfo: {
                                     name: userData.name,
-                                    tag: userData.tag,
-                                    id: userData.name + '#' + userData.tag,
                                 },
                                 state: 1,
                             });
                         }
                     }
-                })
+                });
             } else {
-                // The new friend does not exist. Maybe a typo???
-                socket.emit('newFriendError', "This user does not exist. Maybe a typo?")
+                socket.emit("newFriendError", "This user does not exist");
             }
         });
     });
@@ -123,10 +131,10 @@ io.on('connection', (socket) => {
     socket.on('acceptFriend', (userInfoJson, friendInfoJson) => {
         var userData = JSON.parse(userInfoJson);
         var friendData = JSON.parse(friendInfoJson);
-        conn.query(`UPDATE friends SET state = 2 WHERE user1 = '${userData.id}' AND user2 = '${friendData.id}';`);
-        conn.query(`UPDATE friends SET state = 2 WHERE user1 = '${friendData.id}' AND user2 = '${userData.id}';`);
+        conn.query(`UPDATE friends SET state = 2 WHERE user1 = '${userData.name}' AND user2 = '${friendData.name}';`);
+        conn.query(`UPDATE friends SET state = 2 WHERE user1 = '${friendData.name}' AND user2 = '${userData.name}';`);
         socket.emit('friendAccepted', friendData);
-        var connectedFriend = getConnectedUserById(friendData.id);
+        var connectedFriend = getConnectedUserByName(friendData.name);
         if (connectedFriend) {
             io.sockets.connected[connectedFriend.socketId].emit('friendAccepted', userData);
         }
@@ -135,10 +143,10 @@ io.on('connection', (socket) => {
     socket.on('deleteFriend', (userInfoJson, friendInfoJson) => {
         var userData = JSON.parse(userInfoJson);
         var friendData = JSON.parse(friendInfoJson);
-        conn.query(`DELETE FROM friends WHERE user1 = '${userData.id}' AND user2 = '${friendData.id}';`);
-        conn.query(`DELETE FROM friends WHERE user1 = '${friendData.id}' AND user2 = '${userData.id}';`);
+        conn.query(`DELETE FROM friends WHERE user1 = '${userData.name}' AND user2 = '${friendData.name}';`);
+        conn.query(`DELETE FROM friends WHERE user1 = '${friendData.name}' AND user2 = '${userData.name}';`);
         socket.emit('friendDeleted', friendData);
-        var connectedFriend = getConnectedUserById(friendData.id);
+        var connectedFriend = getConnectedUserByName(friendData.name);
         if (connectedFriend) {
             io.sockets.connected[connectedFriend.socketId].emit('friendDeleted', userData);
         }
@@ -148,7 +156,7 @@ io.on('connection', (socket) => {
         var player1 = JSON.parse(player1Json);
         var player2 = JSON.parse(player2Json);
         var newGame = {
-            id: generateId(),
+            id: generateId(player1.name, player2.name),
             players: [player1, player2],
             turn: 0,
             state: 0,
@@ -157,7 +165,7 @@ io.on('connection', (socket) => {
         }
         games.push(newGame);
         socket.emit("returnNewGame", newGame);
-        var connectedFriend = getConnectedUserById(player2.id);
+        var connectedFriend = getConnectedUserByName(player2.name);
         if (connectedFriend) {
             io.sockets.connected[connectedFriend.socketId].emit('returnNewGame', newGame);
         }
@@ -169,7 +177,7 @@ io.on('connection', (socket) => {
             game.state = 0;
             game.board = create2dArray(21);
             for (var i = 0; i < game.players.length; i++) {
-                var connectedPlayer = getConnectedUserById(game.players[i].id);
+                var connectedPlayer = getConnectedUserByName(game.players[i].name);
                 if (connectedPlayer) {
                     io.sockets.connected[connectedPlayer.socketId].emit("gameMove", game);
                 }
@@ -183,7 +191,7 @@ io.on('connection', (socket) => {
         var gamesForUser = [];
         games.forEach(game => {
             for (var i = 0; i < game.players.length; i++) {
-                if (game.players[i].id == user.id) {
+                if (game.players[i].name == user.name) {
                     gamesForUser.push(game);
                 }
             }
@@ -194,9 +202,13 @@ io.on('connection', (socket) => {
     socket.on('gameMove', (gameJson, x, y) => {
         var game = JSON.parse(gameJson);
         game = gomoku.gameLogic(game, x, y);
+        if (game.state == 1) {
+            // Game has been won, Record win in database. 
+            var winner = game.players[game.winners[game.winners.length - 1]];
+        }
         games[getIndexFromGameId(game.id)] = game;
         for (var i = 0; i < game.players.length; i++) {
-            var connectedPlayer = getConnectedUserById(game.players[i].id);
+            var connectedPlayer = getConnectedUserByName(game.players[i].name);
             if (connectedPlayer) {
                 io.sockets.connected[connectedPlayer.socketId].emit("gameMove", game);
             }
@@ -208,7 +220,7 @@ io.on('connection', (socket) => {
         if (games[index]) {
             games.splice(i, 1);
             for (var i = 0; i < game.players.length; i++) {
-                var connectedPlayer = getConnectedUserById(game.players[i].id);
+                var connectedPlayer = getConnectedUserByName(game.players[i].name);
                 if (connectedPlayer) {
                     io.sockets.connected[connectedPlayer.socketId].emit("gameRemoved", game);
                 }
@@ -233,7 +245,7 @@ function getUserInfoFromId(id, callback) {
     });
 }
 
-function getUserIdFromInfo(username, usertag, callback) {
+function userExists(username, callback) {
     conn.query(`SELECT id FROM users WHERE username = '${username}' AND tag = '${usertag}';`, (err, result) => {
         if (err) throw err;
         callback(err, result);
@@ -247,9 +259,9 @@ function getUserNameAndTag(string) {
     }
 }
 
-function getConnectedUserById(string) {
+function getConnectedUserByName(string) {
     for (var i = 0; i < usersConnected.length; i++) {
-        if (usersConnected[i].userId == string) {
+        if (usersConnected[i].username == string) {
             return usersConnected[i];
         }
     }
@@ -265,12 +277,15 @@ function create2dArray(size) {
     return array;
 }
 
-function generateId() {
+function generateId(n1, n2) {
     var alphabet = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ)(*&^%$#@!-=_+,.<>[]{}";
     var id = "";
     for (var i = 0; i < 64; i++) {
         id += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
     }
+    // Add usernames to game, for more uniqueness
+    id += n1;
+    id += n2;
     return id;
 }
 
