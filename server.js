@@ -127,7 +127,7 @@ io.on('connection', (socket) => {
                         for (var c = 0; c < connectedFriend.length; c++) {
                             io.sockets.connected[connectedFriend[c].socketId].emit('newFriendRequest', {
                                 userInfo: {
-                                    name: userData.name,
+                                    name: myName,
                                 },
                                 state: 1,
                             });
@@ -148,6 +148,7 @@ io.on('connection', (socket) => {
         socket.emit('friendAccepted', friendData);
         var connectedFriend = getConnectedUserByName(friendData.name);
         for (var c = 0; c < connectedFriend.length; c++) {
+            console.log(connectedFriend[c]);
             io.sockets.connected[connectedFriend[c].socketId].emit('friendAccepted', userData);
         }
     });
@@ -272,6 +273,7 @@ function getConnectedUserByName(string) {
             currentConnectedUsers.push(usersConnected[i]);
         }
     }
+    console.log(currentConnectedUsers);
     return currentConnectedUsers;
 }
 function create2dArray(size) {
