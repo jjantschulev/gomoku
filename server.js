@@ -4,7 +4,12 @@ const gomoku = require('./gomoku.js');
 const mysql = require("mysql");
 const crypto = require("crypto");
 const mysqlConfig = require("./mysqlConfig.js");
-var server = http.createServer().listen(3013, err => { if (err) throw err; console.log("Gomoku Running on port 3013") });
+
+const express = require('express');
+var app = express();
+var server = app.listen(3013, err => { if (err) throw err; console.log("Gomoku Running on port 3013") });
+app.use(express.static('public'));
+// var server = http.createServer().listen(3013, err => { if (err) throw err; console.log("Gomoku Running on port 3013") });
 var io = socket_io(server, { pingInterval: 500, pingTimeout: 5000 });
 
 var conn = mysql.createConnection(mysqlConfig.mysqlConfig);

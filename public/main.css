@@ -1,0 +1,82 @@
+body {
+    margin:0;
+    font-family: 'Varela Round', sans-serif;
+    background-color: rgb(21, 24, 40);
+    color: #b4b8c9;
+    height:100vh;
+}
+
+.container {
+    max-width: 400px;
+    width: calc(100% - 50px);
+    margin: 0 auto;
+    padding: 25px;
+
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+h1 {
+    color: #00ff74;
+    text-align: center;
+}
+
+.textInput {
+
+    display: block;
+    width: calc(100% - 36px);
+    font-size: 22px;
+    font-family: 'Varela Round' sans-serif;
+    outline: none;
+    padding: 12px 18px;
+    margin: 10px 0px;
+    background-color: #2e3448;
+    border-radius: 100px;
+    border: none;
+    color: #b4b8c9;
+
+}
+
+.textInput::selection {
+    background: #00ff7488;
+}
+
+.circleSubmit {
+    background-color: #00ff74;
+    border-radius: 100px;
+    width: 50px;
+    height: 50px;
+    border: none;
+    outline:none;
+    transition: .3s;
+    margin: auto;
+    display:block;
+}
+
+.circleSubmit:active {
+    background-color: #00ff74aa;
+}
+
+.circleSubmit i{
+    display: block;
+    position: relative;
+    top:50%;
+    left:50%;
+    color: rgb(21, 24, 40);
+    transform: translate(-50%, 0%);
+}
+
+a {
+    color: #676a78;
+    text-decoration: none;
+    text-align: center;
+    width:100%;
+    display:block;
+    margin-top: 20px;
+}
+
+.errText {
+
+}
+/* wootdefaak */
